@@ -1,7 +1,12 @@
-const zmq = require('zeromq')
+//const zmq = require('zeromq')
+const path = require('path')
+const git = require('isomorphic-git')
+const http = require('isomorphic-git/http/node')
+const fs = require('fs')
+
+/*
 let req = zmq.socket('req')
 req.identity = 'Worker1'
-
 var args = process.argv.slice(2)
 if (args.length < 1) {
   console.log ("node myclient brokerURL")
@@ -17,3 +22,20 @@ req.on('message', (c,sep,msg)=> {
 	}, 1000)
 })
 req.send(['','',''])
+*/
+async function workInJob(){ 
+	const dir = path.join(process.cwd(), 'workDir')
+	await git.clone({ 
+		fs, 
+		http, 
+		dir, 
+		url: 'https://github.com/isomorphic-git/lightning-fs' 
+	}).then(console.log('Git repository cloned correctly'))
+
+	console.log('Execute order 66')
+	fs.rmSync(dir, { recursive: true, force: true });
+}
+
+workInJob()
+
+
