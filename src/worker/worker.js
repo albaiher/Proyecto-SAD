@@ -37,6 +37,7 @@ function runJob(){
 
 workInJob('https://github.com/isomorphic-git/lightning-fs')
 
+module.exports = {workInJob} 
 
 
 
