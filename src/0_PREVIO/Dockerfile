@@ -11,5 +11,8 @@ RUN apt-get install -y nodejs
 RUN apt-get upgrade -y
 RUN npm init -y
 RUN npm install zeromq@5
+#RUN npm install git
+#RUN npm install git repository
+#RUN npm install git
 #RUN npm install -g zeromq@5
 #RUN ufw allow 8000:9999/tcp
