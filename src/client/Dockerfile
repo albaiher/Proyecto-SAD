@@ -1,4 +1,3 @@
-FROM sad22/zmq
-COPY ./client.js /myclient.js
-
-CMD node myclient $BROKER_URL
+FROM kafkajs
+COPY ./*.js /src/
+CMD node /src/client.js $BROKER_URL

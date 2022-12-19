@@ -1,4 +1,4 @@
-FROM sad22/zmq
-COPY ./worker.js /myworker.js
+FROM kafkajs
+COPY ./*.js /src/
 
-CMD node myworker $BROKER_URL
+CMD node /src/worker.js $BROKER_URL

@@ -17,6 +17,11 @@ services:
   broker:
     image: broker
     build: ./broker/
+    links:
+      - kafka 
     expose:
       - "9998"
       - "9999"
+  kafka:
+    image: kafkajs
+    build: ./configuration/

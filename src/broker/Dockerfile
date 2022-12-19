@@ -1,4 +1,4 @@
-FROM sad22/zmq
-COPY ./broker.js /mybroker.js
+FROM kafkajs
+COPY ./*.js /src/ 
 EXPOSE 9998 9999
-CMD node mybroker 9998 9999
+CMD node /src/broker.js 9998 9999
