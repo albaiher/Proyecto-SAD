@@ -8,7 +8,7 @@ if (args.length < 1) {
 }
 let bkURL   = args[0]
 let quedan=10
-console.log(bkURL+ "i'm client")
+console.log(bkURL+ " i'm client")
 req.connect(bkURL)
 req.on('message', (msg)=> {
 	console.log('i respond: '+msg)

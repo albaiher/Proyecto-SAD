@@ -1,33 +1,43 @@
-const zmq = require('zeromq')
-let sc = zmq.socket('router') // frontend
-let sw = zmq.socket('router') // backend
+const createHookReceiver = require('npm-hook-receiver')
+const kafka = require('../kafka/kafka')        // ++
+const producer = kafka.producer()       // ++
 
-var args = process.argv.slice(2)
-if (args.length < 2) {
-  console.log ("node mybroker clientsPort workersPort")
-  process.exit(-1)
+const main = async () => {
+   await producer.connect()             // ++
+   const server = createHookReceiver({
+      // Secret created when registering the webhook with NPM.
+      // Used to validate the payload.
+      secret: process.env.HOOK_SECRET,
+      // Path for the handler to be mounted on.
+      mount: '/hook'
+   })
+
+   server.on('package:publish', async event => {
+	try {
+	   const responses = await producer.send({
+		  topic: process.env.TOPIC,
+		  messages: [{
+			 // Name of the published package as key, to make sure that we process events in order
+			 key: event.name,
+			 // The message value is just bytes to Kafka, so we need to serialize our JavaScript
+			 // object to a JSON string. Other serialization methods like Avro are available.
+			 value: JSON.stringify({
+				package: event.name,
+				version: event.version
+			 })
+		  }]
+	   })
+	   console.log('Published message', { responses })
+	} catch (error) {
+	   console.error('Error publishing message', error)
+	}
+	})
+   server.listen(process.env.PORT || 3000, () => {
+      console.log(`Server listening on port ${process.env.PORT || 3000}`)
+   })
 }
 
-var cport = "9998"
-var wport = "9999"
-let cli=[], req=[], workers=[]
-sc.bind('tcp://*:'+cport)
-sw.bind('tcp://*:'+wport)
-sc.on('message',(c,sep,m)=> {
-	console.log('client msg',c+'',m+'')
-	if (workers.length==0) { 
-		cli.push(c); req.push(m)
-	} else {
-		sw.send([workers.shift(),'',c,'',m])
-	}
-})
-sw.on('message',(w,sep,c,sep2,r)=> {
-    console.log('worker msg',w+'',c+'',r+'')
-    if (c!='') sc.send([c,'',r])
-    if (cli.length>0) { 
-	sw.send([w,'',
-	    cli.shift(),'',req.shift()])
-    } else {
-	workers.push(w)
-    }	
+main().catch(error => {
+   console.error(error)
+   process.exit(1)
 })

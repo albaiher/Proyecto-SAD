@@ -6,22 +6,23 @@ services:
     links:
       - broker
     environment:
-      - BROKER_URL=tcp://bro:9998
+      - BROKER_URL=tcp://broker:3000
   worker:
     image: worker
     build: ./worker/
     links:
       - broker
-    environment:
-      - BROKER_URL=tcp://bro:9999
   broker:
     image: broker
     build: ./broker/
     links:
       - kafka 
     expose:
-      - "9998"
-      - "9999"
+      - "3000"
   kafka:
     image: kafkajs
+    ports: 
+    - 9092:9092
+    environment:
+      KAFKA_X: 1
     build: ./configuration/
