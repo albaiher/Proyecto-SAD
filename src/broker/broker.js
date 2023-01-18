@@ -1,5 +1,5 @@
-setTimeout(function(){console.log("Hello docker!")}, 25000)
-setTimeout(function(){go()}, 25000)
+setTimeout(function(){console.log("Hello docker!")}, 45000)
+setTimeout(function(){go()}, 45000)
 
 function go(){
 
