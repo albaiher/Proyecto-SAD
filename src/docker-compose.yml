@@ -7,22 +7,77 @@ services:
       - broker
     environment:
       - BROKER_URL=tcp://broker:3000
+    depends_on:
+      - kafka
   worker:
     image: worker
     build: ./worker/
     links:
       - broker
+    depends_on:
+      - kafka
   broker:
     image: broker
     build: ./broker/
     links:
-      - kafka 
+      - kafka2
     expose:
       - "3000"
-  kafka:
+    depends_on:
+      - kafka
+    networks:
+      - net_backend
+   # environment:
+    #  - WAIT_HOSTS=kafka:9092
+     # - WAIT_BEFORE_HOSTS=10
+
+  kafka2:
     image: kafkajs
-    ports: 
-    - 9092:9092
+    ports:
+      - 9094:9094
     environment:
       KAFKA_X: 1
     build: ./configuration/
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - net_backend
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    labels:
+      - 'custom.project=kafkajs-zstd'
+      - 'custom.service=kafka'
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    expose:
+      - 9092
+
+    networks:
+      - net_backend
+
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT, 
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,
+      # PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENERS: INSIDE://:9092
+      # OUTSIDE://127.0.0.1:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: INFO
+      KAFKA_LOG4J_LOGGERS: 'kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO'
+      CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
+      
+networks:
+  net_backend:
+   # name: net_backend
+    driver: bridge
+  
