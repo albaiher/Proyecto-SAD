@@ -7,8 +7,10 @@ const ssl = !!sasl
 // This creates a client instance that is configured to connect to the Kafka broker provided by
 // the environment variable KAFKA_BOOTSTRAP_SERVER
 const kafka = new Kafka({
-   clientId: 'npm-slack-notifier',
-   brokers: [process.env.KAFKA_BOOTSTRAP_SERVER],
+   clientId: 'to-do',
+   //brokers: [process.env.KAFKA_BOOTSTRAP_SERVER],
+   brokers: ["kafka:29094"],
+   connectionTimeout: 5000,
    ssl,
    sasl
 })

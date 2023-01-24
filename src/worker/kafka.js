@@ -10,6 +10,8 @@ const kafka = new Kafka({
    clientId: 'to-do',
    //brokers: [process.env.KAFKA_BOOTSTRAP_SERVER],
    brokers: ["kafka:29094"],
+   connectionTimeout: 5000,
+   enforceRequestTimeout: false,
    ssl,
    sasl
 })
