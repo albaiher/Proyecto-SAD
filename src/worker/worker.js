@@ -1,32 +1,23 @@
 const { executionAsyncResource } = require('async_hooks')
+const kafka = require('./kafka')
+const  path = require('path')
+const git = require('isomorphic-git')
+const http  = require('isomorphic-git/http/node')
+const  fs = require('fs')
+const cmd = require('child_process');
 
-setTimeout(function(){console.log("Hello worker!")}, 50000)
-setTimeout(function(){go()}, 50000)
+let systemDirection = path.join(process.cwd(), 'framework-')
+let safeDirectory = 1
+var consumer, producer
+var alreadyWorking = false
 
-function go(){
+//setTimeout(function(){console.log("Hello worker!")}, 50000)
+//setTimeout(function(){initialize()}, 50000)
 
-	const kafka = require('./kafka')   
-	const consumer = kafka.consumer({
-		groupId: "worker"
-	})
-	const producer = kafka.producer() 
+function initialize(){
 
-	const fs = require('fs')
-
-	const path = require('path')
-	const git = require('isomorphic-git')
-	const http = require('isomorphic-git/http/node')
-	
-	const systemDirection = path.join(process.cwd(), 'framework')
-	
-	
-	var i = 0;
-
-	function execute(){
-		while(working) {}
-		console.log("Starting work") 
-		workInJob(toDo.pop())
-	}
+	consumer = kafka.consumer({ groupId: "worker" })
+	producer = kafka.producer()
 
 	const readKafka = async () => {
 		await consumer.connect()
@@ -42,64 +33,84 @@ function go(){
 				  key: message.key.toString(),
 				  value: message.value.toString()
 			   })
-			   workInJob('https://github.com/isomorphic-git/lightning-fs', message.key.toString())
-			   
+			   workInJob(message.key.toString(), message.value.toString())
 			}
 		}) 
 	}
-	
-	var result = 156455;
-	async function sendResult  (result, key)  {
-		await producer.connect()
-		await producer.send({
-			topic: "result",
-			messages: [{
-				key: key,
-				value: JSON.stringify(15645),
-			}]
-		})
+
+	readKafka();
+}	
+	async function workInJob(repository, execParameters){
+		if(isWorking()) return ;
+		await clone(repository)
+		let result = await runJob(execParameters)
+		removeDirectory(systemDirection)
+		//sendResult(result, execParameters)
 	}
-	
-	async function removeDirectory() {
+
+	async function clone(repository) {
+		alreadyWorking = true
+		systemDirection = systemDirection.concat(safeDirectory);
+
+		await git.clone({
+			fs,
+			http,
+			dir: systemDirection,
+			url: repository
+		}).then(() => {
+			console.log('Git repository cloned correctly')
+			safeDirectory++
+		})
+		
+	}
+
+	async function runJob(parameters){
+		console.log('Running job')
+		let stdout = await runCommandSync("type kafka.js")
+		return stdout;
+
+	}
+
+	async function removeDirectory(directory) {
 		console.log('Execute order 66')
 		try{
-			fs.rmSync(systemDirection, { recursive: true, force: true })
+			fs.rmSync(directory, { recursive: true, force: true })
 		}
 		catch (error ) { 
 			console.log('The directory cannot be removed')	
 		}
 	}	
-	async function workInJob(repository, key){ 
-		clone(repository)
-		result = runJob()
-		removeDirectory(systemDirection)
-		sendResult(result, key);
+
+	async function sendResult  (result, key)  {
+		alreadyWorking = false
+
+		await producer.connect()
+		await producer.send({
+			topic: "result",
+			messages: [{
+				key: key,
+				value: JSON.stringify(result),
+			}]
+		})
 	}
 
-	async function clone(repository) {
-		i++
-		await git.clone({
-			fs,
-			http,
-			dir: systemDirection.concat(i),
-			url: repository
-		}).then(console.log('Git repository cloned correctly'))
-	}
-
-	async function runJob(){
-		console.log('Running job')
-		return 324232;
-
-	}
 	function timeTest(){
 		setTimeout(()=>{console.log("Fin du timeout")}, 20000)
 	} 
 
-	//workInJob('https://github.com/isomorphic-git/lightning-fs')
+	function isWorking() {
+		return alreadyWorking
+	}
 	
-	readKafka();
-	
-	
-	module.exports = {workInJob} 
-}
+	function runCommandSync(command) {
+		let buffer
+		try {
+			buffer = cmd.execSync(command, {encoding: 'utf-8'})
+		} catch (error) {
+			console.log(error)
+		}
+		return buffer
+	}
+
+	workInJob('https://github.com/isomorphic-git/lightning-fs', 1)
 
