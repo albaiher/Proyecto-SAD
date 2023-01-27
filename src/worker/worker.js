@@ -79,11 +79,11 @@ async function runJob(parameters){
 }
 
 function isAnotherType(parameters) {
-return parameters.type.equal("Another Type")
+return "A".equal("Another Type")
 }
 
 function isASimpleNPM(parameters) {
-return parameters.tpye.equal("Simple npm")
+return "B".equal("Simple npm")
 }
 
 async function removeDirectory(directory) {
