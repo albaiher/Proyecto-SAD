@@ -1,4 +1,3 @@
-const { executionAsyncResource } = require('async_hooks')
 const kafka = require('./kafka')
 const  path = require('path')
 const git = require('isomorphic-git')
@@ -39,78 +38,90 @@ function initialize(){
 	}
 
 	readKafka();
-}	
-	async function workInJob(repository, execParameters){
-		if(isWorking()) return ;
-		await clone(repository)
-		let result = await runJob(execParameters)
-		removeDirectory(systemDirection)
-		//sendResult(result, execParameters)
-	}
+}
 
-	async function clone(repository) {
-		alreadyWorking = true
-		systemDirection = systemDirection.concat(safeDirectory);
+async function workInJob(repository, execParameters){
+	if(isWorking()) return ;
+	let parameters = JSON.parse(execParameters)
+	await clone(repository)
+	let result = await runJob(execParameters)
+	removeDirectory(systemDirection)
+	//sendResult(result, execParameters)
+}
 
-		await git.clone({
-			fs,
-			http,
-			dir: systemDirection,
-			url: repository
-		}).then(() => {
-			console.log('Git repository cloned correctly')
-			safeDirectory++
-		})
-		
-	}
+async function clone(repository) {
+	alreadyWorking = true
+	systemDirection = systemDirection.concat(safeDirectory);
 
-	async function runJob(parameters){
-		console.log('Running job')
-		let stdout = await runCommandSync("type kafka.js")
-		return stdout;
+	await git.clone({
+		fs,
+		http,
+		dir: systemDirection,
+		url: repository
+	}).then(() => {
+		console.log('Git repository cloned correctly')
+		safeDirectory++
+	})
+	
+}
 
-	}
+async function runJob(parameters){
+	console.log('Running job')
+	let stdout
 
-	async function removeDirectory(directory) {
-		console.log('Execute order 66')
-		try{
-			fs.rmSync(directory, { recursive: true, force: true })
-		}
-		catch (error ) { 
-			console.log('The directory cannot be removed')	
-		}
-	}	
-
-	async function sendResult  (result, key)  {
-		alreadyWorking = false
-
-		await producer.connect()
-		await producer.send({
-			topic: "result",
-			messages: [{
-				key: key,
-				value: JSON.stringify(result),
-			}]
-		})
-	}
-
-	function timeTest(){
-		setTimeout(()=>{console.log("Fin du timeout")}, 20000)
-	} 
-
-	function isWorking() {
-		return alreadyWorking
+	if (isASimpleNPM(parameters)){
+		stdout = runCommandSync("npm start", systemDirection)
+	} else if(isAnotherType(parameters)){
+		runCommandSync("cat README.md", systemDirection)
 	}
 	
-	function runCommandSync(command) {
-		let buffer
-		try {
-			buffer = cmd.execSync(command, {encoding: 'utf-8'})
-		} catch (error) {
-			console.log(error)
-		}
-		return buffer
-	}
+	return stdout;
+}
 
-	workInJob('https://github.com/isomorphic-git/lightning-fs', 1)
+function isAnotherType(parameters) {
+return parameters.type.equal("Another Type")
+}
+
+function isASimpleNPM(parameters) {
+return parameters.tpye.equal("Simple npm")
+}
+
+async function removeDirectory(directory) {
+	console.log('Execute order 66')
+	try{
+		fs.rmSync(directory, { recursive: true, force: true })
+	}
+	catch (error ) { 
+		console.log('The directory cannot be removed')	
+	}
+}	
+
+async function sendResult  (result, key)  {
+	alreadyWorking = false
+
+	await producer.connect()
+	await producer.send({
+		topic: "result",
+		messages: [{
+			key: key,
+			value: JSON.stringify(result),
+		}]
+	})
+}
+
+function isWorking() {
+	return alreadyWorking
+}
+
+function runCommandSync(command, directory) {
+	let buffer
+	try {
+		buffer = cmd.execSync(command, {cwd: directory ,encoding: 'utf-8'})
+	} catch (error) {
+		console.log(error)
+	}
+	return buffer
+}
+
+workInJob('https://github.com/isomorphic-git/lightning-fs', 1)
 
