@@ -44,7 +44,8 @@ function go(){
 		}) 
 	}
 	var i = 0;
-	async function sendKafka  (link)  {
+	async function sendKafka  (message)  {
+		if(canBeRunned()) return ;
 		console.log("send Kafka"+i)
 		
 		await producer.connect()
@@ -52,17 +53,22 @@ function go(){
 			topic: "to-run",
 			messages: [{
 				key: "key".concat(i++),
-				value: JSON.stringify({
-					link: link
-				})
+				value: message
 			}]
 		})
 		console.log('Published message'+i, { test })
 		}
 	readKafka();
 	main()
-	.then( sendKafka("https://github.com/isomorphic-git/lightning-fs'"))
-	.then( sendKafka("https://github.com/isomorphic-git/lightning-fs'"))
+	.then( () => {
+		let message = {
+			version: 1,
+			repository: "https://github.com/isomorphic-git/lightning-fs",
+			type: "Simple NPM",
+			parameters: "A"
+		}
+		sendKafka(JSON.stringify(message))
+	})
 	.catch(error => {
 	console.error(error)
 	process.exit(1)
@@ -70,9 +76,18 @@ function go(){
 
 }
 
+function canBeRunned(message){
+	return message && isJSON(message)
+}
 
-
-
+function isJSON(str) {
+    try {
+        JSON.parse(str);
+    } catch (error) {
+        return false;
+    }
+    return true;
+}
 
 /*const main = async () => {
    await producer.connect()             // ++

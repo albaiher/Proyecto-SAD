@@ -33,7 +33,9 @@ function initialize(){
 				  key: message.key.toString(),
 				  value: message.value.toString()
 			   })
-			   workInJob(message.key.toString(), message.value.toString())
+
+			   let json = JSON.parse(message.value.toString())
+			   workInJob(message.key.toString(), json)
 			}
 		}) 
 	}
@@ -41,14 +43,13 @@ function initialize(){
 	readKafka();
 }
 
-async function workInJob(repository, message){
+async function workInJob(key, job){
 	if(isWorking()) return ;
-	let result, parameters
+	let result
 	try{
-		await clone(repository)
-		parameters = JSON.parse(message)
-		result = await runJob(message)
-		sendResult(result, message)
+		await clone(job.repository)
+		result = await runJob(job.type, job.parameters)
+		sendResult(result, key)
 	} catch (error){
 		console.log(error)
 	}
@@ -71,13 +72,13 @@ async function clone(repository) {
 	
 }
 
-async function runJob(parameters){
-	console.log('Running job')
+async function runJob(type, parameters){
+	console.log(`Running job type ${type}`)
 	let stdout
 
-	if (isASimpleNPM(parameters)){
+	if (isASimpleNPM(type)){
 		stdout = runCommandSync("npm start", systemDirection)
-	} else if(isAnotherType(parameters)){
+	} else if(isAnotherType(type)){
 		stdout = runCommandSync("cat README.md", systemDirection)
 	}
 	return stdout;
@@ -106,7 +107,6 @@ async function sendResult  (result, key)  {
 	})
 }
 
-
 async function removeDirectory(directory) {
 	console.log('Execute order 66')
 	try{
@@ -121,13 +121,21 @@ function isWorking() {
 	return alreadyWorking
 }
 
-function isASimpleNPM(parameters) {
-	return "Simple npm" === "Simple npm" 
+function isASimpleNPM(type) {
+	return type === "Simple npm" 
 }
 
-function isAnotherType(parameters) {
-	return "Another Type" === "Another Type"
+function isAnotherType(type) {
+	return type === "Another Type"
 }
 
-workInJob('https://github.com/isomorphic-git/lightning-fs', 1)
+function testWorker(){
+	let message = {
+		version: 1,
+		repository: "https://github.com/isomorphic-git/lightning-fs",
+		type: "Simple npm",
+		parameters: "A"
+	}
+	workInJob("Key", message)
+}
 
