@@ -6,7 +6,7 @@ services:
     links:
       - broker
     environment:
-      - BROKER_URL=tcp://broker:3000
+      - BROKER_URL=http://broker:3000
     depends_on:
       - kafka
   worker:

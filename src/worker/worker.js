@@ -11,8 +11,10 @@ let safeDirectory = 1
 var consumer, producer
 var alreadyWorking = false
 
-setTimeout(function(){console.log("Hello worker!")}, 50000)
-setTimeout(function(){initialize()}, 50000)
+setTimeout(function(){console.log("Hello worker!")}, 38000)
+setTimeout(function(){initialize()}, 38000)
+
+var i = 0;
 
 function initialize(){
 
@@ -23,17 +25,23 @@ function initialize(){
 		await consumer.connect()
 		await consumer.subscribe({
 			topic: "to-run",
-		   	fromBeginning: true
+		   	fromBeginning: false
 		})
 
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
-			   console.log('Received message', {
+				var key = message.key
+				console.log(key)
+				var url = message.value.toString()
+				/*console.log('Received message', {
 				  topic,
-				  key: message.key.toString(),
-				  value: message.value.toString()
-			   })
-			   workInJob(message.key.toString(), message.value.toString())
+				  key,
+				  url
+			   })*/
+			   //workInJob(message.key.toString(), message.value.toString())
+			   console.log("//!!\\\/Executing message with key: "+key+" and url: "+url)
+			   i++;
+			   sendResult(" Holaaa, "+key+", encantado de conocerte", key )
 			}
 		}) 
 	}
@@ -98,12 +106,13 @@ async function sendResult  (result, key)  {
 
 	await producer.connect()
 	await producer.send({
-		topic: "result",
+		topic: "result-"+key,
 		messages: [{
 			key: key,
 			value: JSON.stringify(result),
 		}]
 	})
+	console.log("Sending to "+key)
 }
 
 
@@ -129,5 +138,5 @@ function isAnotherType(parameters) {
 	return "Another Type" === "Another Type"
 }
 
-workInJob('https://github.com/isomorphic-git/lightning-fs', 1)
+//workInJob('https://github.com/isomorphic-git/lightning-fs', 1)
 
