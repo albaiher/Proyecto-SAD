@@ -6,13 +6,13 @@ const  fs = require('fs')
 const cmd = require('child_process');
 const { Console } = require('console')
 
-let systemDirection = path.join(__dirname, 'framework-1')
+let systemDirection = path.join(__dirname, 'framework-')
 let safeDirectory = 1
 var consumer, producer
 var alreadyWorking = false
 
-//setTimeout(function(){console.log("Hello worker!")}, 38000)
-//setTimeout(function(){initialize()}, 38000)
+setTimeout(function(){console.log("Hello worker!")}, 38000)
+setTimeout(function(){initialize()}, 38000)
 
 var i = 0;
 
@@ -34,10 +34,7 @@ function initialize(){
 				let json = JSON.parse(message.value.toString())
 			
 			   console.log("//!!\\\/Executing message with key: "+key+" and url: "+json)
-			   i++;
-			   //sendResult(" Holaaa, "+key+", encantado de conocerte", key )
-			   
-
+			   i++;			   
 			   workInJob(message.key, json)
 			}
 		}) 
@@ -50,13 +47,13 @@ async function workInJob(key, job){
 	if(isWorking()) return ;
 	let result
 	try{
-		//await clone(job.repository)
-		result = await runJob(job.type, job.parameters)
-		//.then(sendResult(result, key))
+		await clone(job.repository)
+		result = await runJob(job.type,job.fileName, job.parameters)
+		.then(sendResult(result, key))
 	} catch (error){
 		console.log(error)
 	}
-	//removeDirectory(systemDirection)
+	removeDirectory(systemDirection)
 }
 
 async function clone(repository) {
@@ -75,15 +72,15 @@ async function clone(repository) {
 	
 }
 
-async function runJob(type, parameters){
+async function runJob(type, fileName, parameters){
 	console.log(`Running job type ${type}`)
 	let stdout
 
-	if (isASimpleNPM(type)){
-		 //runCommandSync("npm install", systemDirection)
-		 stdout = runCommandSync(`npm test -- 'LinkedList'`, systemDirection)
-	} else if(isAnotherType(type)){
-		stdout = runCommandSync("cat README.md", systemDirection)
+	if (isASimpleJS(type)){
+		stdout = runCommandSync(`node ${fileName}.js ${parameters}` , systemDirection)
+	} else if(isASimpleNPM(type)){
+		runCommandSync("npm install", systemDirection)
+		stdout = runCommandSync(`npm start ${parameters}`, systemDirection)
 	}
 	return stdout;
 }
@@ -131,24 +128,34 @@ function isWorking() {
 	return alreadyWorking
 }
 
+function isASimpleJS(type) {
+	return type === "Simple JS" 
+}
+
 function isASimpleNPM(type) {
-	return type === "Simple npm" 
-}
-
-function isAnotherType(type) {
-	return type === "Another Type"
+	return type === "Simple NPM"
 }
 
 
-function testWorker(){
+function testWorkerSimpleJS(){
 	let message = {
 		version: 1,
-		repository: "https://github.com/trekhleb/javascript-algorithms",
-		type: "Simple npm",
+		repository: "https://github.com/ayoisaiah/javascript-calculator",
+		fileName: "main",
+		type: "Simple JS",
 		parameters: "A"
 	}
 	workInJob("Key", message)
 }
 
-testWorker()
+function testWorkerSimpleNPM(){
+	let message = {
+		version: 1,
+		repository: "https://github.com/ayoisaiah/javascript-calculator",
+		fileName: "main",
+		type: "Simple JS",
+		parameters: "A"
+	}
+	workInJob("Key", message)
+}
 
