@@ -20,6 +20,12 @@ function go(){
 	var waitingRepsonse =[] 
 	
 	var i = 0;
+	let messageTest = {
+		version: 1,
+		repository: "https://github.com/isomorphic-git/lightning-fs",
+		type: "Simple NPM",
+		parameters: "A"
+	}
 
 	const main= async() =>{
 		const memoryStore = new session.MemoryStore()
@@ -28,38 +34,41 @@ function go(){
 			resave:false,
 			saveUninitialized: true,
 			store: memoryStore
-		} ))
+		} )) 
+	}
+
 		app.use(bodyParser.urlencoded({extended:true}));
 		app.use(bodyParser.json());
 		app.use(bodyParser.raw());
 		app.use(express.json());
 		app.use(express.urlencoded());
 
-		var stop = false
 		app.post('/', function(req, res) {
-			var url = JSON.stringify(req.body.url)
+			var message = JSON.stringify(req.body.message)
 			var key = JSON.stringify(req.body.key)
-			console.log("receive "+ url + " from " + key)
+			console.log("receive "+ message + " from " + key)
 			waitingRepsonse[key] = res;  
 			var resres = waitingRepsonse[key];
 			//resres.send("fausse reponse")
 			
-			const send = async (link, key)  => {
-				console.log("sending to Kafka - "+key + " and "+link)
+			const sendK = async (message, key)  => {
+				if(!canBeRunned(message)) {
+					console.error("Can't be run !! JSON needed")
+					return ;
+				}  
+				console.log("sending to Kafka - "+key + " and "+message)
 				
 				await producer.connect()
 				test = await producer.send({
 					topic: "to-run",
 					messages: [{
 						key: key,
-						value: JSON.stringify({
-							link: link
-						})
+						value: message
 					}]
 				})
 				console.log('Published message n°'+i + " of key: "+key)
 			}
-			const read = async (key) => {
+			const readK = async (key) => {
 				await consumer.connect()
 				await consumer.subscribe({
 					topic: "result-"+key,
@@ -72,17 +81,21 @@ function go(){
 						var key = message.key
 						var result = message.value.toString()
 						console.log('Received message', {
-						  topic,
-						  partition,
-						  key,
-						  result
-					   })
-					   res.send(result)
+							topic,
+							partition,
+							key,
+							result
+						})
+						if(result == undefined){
+							result = "/!\\ Error during the execution.../!\\"
+						}
+						res.send(result)
 					}
 				}) 
 			}
-			send(url,key)
-			read(key)
+			//sendK(JSON.stringify(messageGood),key)
+			sendK(message,key)
+			readK(key)
 			
 
 		}) // respuesta a petición http POST
@@ -91,15 +104,99 @@ function go(){
 		app.listen(3000) // el servidor escucha en el port 3000
     	console.log("server on!")
 
-	} 
-
-	main()
 	
+
+		// await consumer.run({
+		// 	eachMessage: async ({ topic, partition, message }) => {
+		// 	   console.log('Received message', {
+		// 		  topic,
+		// 		  partition,
+		// 		  key: message.key.toString(),
+		// 		  result: message.value.toString()
+		// 	   })
+		// 	}
+		// }) 
+
+
+	// var i = 0;
+	async function sendKafka  (message)  {
+		if(canBeRunned()) return ;
+		console.log("send Kafka"+i)
+		
+		await producer.connect()
+		test = await producer.send({
+			topic: "to-run",
+			messages: [{
+				key: "key".concat(i++),
+				value: message
+			}]
+		})
+		console.log('Published message'+i, { test })
+	}
+	//readKafka();
+	main()
+	.then( () => {
+		
+		//sendKafka(JSON.stringify(message))
+	})
 	.catch(error => {
 	console.error(error)
 	process.exit(1)
 	})
 
+
+
+	function canBeRunned(message){
+		return message && isJSON(message)
+	}
+
+	function isJSON(str) {
+		try {
+			JSON.parse(str);
+		} catch (error) {
+			return false;
+		}
+		return true;
+	}
+
+} 
+/*const main = async () => {
+   await producer.connect()             // ++
+   const server = createHookReceiver({
+      // Secret created when registering the webhook with NPM.
+      // Used to validate the payload.
+      secret: process.env.HOOK_SECRET,
+      // Path for the handler to be mounted on.
+      mount: '/hook'
+   })
+
+   server.on('package:publish', async event => {
+	try {
+	   const responses = await producer.send({
+		  topic: process.env.TOPIC,
+		  messages: [{
+			 // Name of the published package as key, to make sure that we process events in order
+			 key: event.name,
+			 // The message value is just bytes to Kafka, so we need to serialize our JavaScript
+			 // object to a JSON string. Other serialization methods like Avro are available.
+			 value: JSON.stringify({
+				package: event.name,
+				version: event.version
+			 })
+		  }]
+	   })
+	   console.log('Published message', { responses })
+	} catch (error) {
+	   console.error('Error publishing message', error)
+	}
+	})
+   server.listen(process.env.PORT || 3000, () => {
+      console.log(`Server listening on port ${process.env.PORT || 3000}`)
+   })
 }
 
-
+main().catch(error => {
+   console.error(error)
+   process.exit(1)
+})
+*/

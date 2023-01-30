@@ -31,17 +31,14 @@ function initialize(){
 		await consumer.run({
 			eachMessage: async ({ topic, partition, message }) => {
 				var key = message.key
-				console.log(key)
-				var url = message.value.toString()
-				/*console.log('Received message', {
-				  topic,
-				  key,
-				  url
-			   })*/
-			   //workInJob(message.key.toString(), message.value.toString())
-			   console.log("//!!\\\/Executing message with key: "+key+" and url: "+url)
+				let json = JSON.parse(message.value.toString())
+			
+			   console.log("//!!\\\/Executing message with key: "+key+" and url: "+json)
 			   i++;
-			   sendResult(" Holaaa, "+key+", encantado de conocerte", key )
+			   //sendResult(" Holaaa, "+key+", encantado de conocerte", key )
+			   
+
+			   workInJob(message.key, json)
 			}
 		}) 
 	}
@@ -49,14 +46,13 @@ function initialize(){
 	readKafka();
 }
 
-async function workInJob(repository, message){
+async function workInJob(key, job){
 	if(isWorking()) return ;
-	let result, parameters
+	let result
 	try{
-		await clone(repository)
-		parameters = JSON.parse(message)
-		result = await runJob(message)
-		sendResult(result, message)
+		await clone(job.repository)
+		result = await runJob(job.type, job.parameters)
+		.then(sendResult(result, key))
 	} catch (error){
 		console.log(error)
 	}
@@ -79,13 +75,13 @@ async function clone(repository) {
 	
 }
 
-async function runJob(parameters){
-	console.log('Running job')
+async function runJob(type, parameters){
+	console.log(`Running job type ${type}`)
 	let stdout
 
-	if (isASimpleNPM(parameters)){
+	if (isASimpleNPM(type)){
 		stdout = runCommandSync("npm start", systemDirection)
-	} else if(isAnotherType(parameters)){
+	} else if(isAnotherType(type)){
 		stdout = runCommandSync("cat README.md", systemDirection)
 	}
 	return stdout;
@@ -102,7 +98,12 @@ function runCommandSync(command, directory) {
 }
 
 async function sendResult  (result, key)  {
-	alreadyWorking = false
+	if(result == undefined){
+		result = "/!\\ Error during the execution.../!\\"
+	}
+	console.log(result)
+	console.log("\n\n")
+	console.log(JSON.stringify(result))
 
 	await producer.connect()
 	await producer.send({
@@ -114,7 +115,6 @@ async function sendResult  (result, key)  {
 	})
 	console.log("Sending to "+key)
 }
-
 
 async function removeDirectory(directory) {
 	console.log('Execute order 66')
@@ -130,13 +130,22 @@ function isWorking() {
 	return alreadyWorking
 }
 
-function isASimpleNPM(parameters) {
-	return "Simple npm" === "Simple npm" 
+function isASimpleNPM(type) {
+	return type === "Simple npm" 
 }
 
-function isAnotherType(parameters) {
-	return "Another Type" === "Another Type"
+function isAnotherType(type) {
+	return type === "Another Type"
 }
 
-//workInJob('https://github.com/isomorphic-git/lightning-fs', 1)
+
+function testWorker(){
+	let message = {
+		version: 1,
+		repository: "https://github.com/isomorphic-git/lightning-fs",
+		type: "Simple npm",
+		parameters: "A"
+	}
+	workInJob("Key", message)
+}
 

@@ -24,7 +24,11 @@ function go(  ) {
     //data: '{"user":"mathilde"}'
     data:{
       key:5,
-      url:"http://github.com"
+      message: {
+        version: 1,
+        repository: "https://github.com/isomorphic-git/lightning-fs",
+        type: "Simple npm",
+        parameters: "A" } 
     }
   })
   .then(function (reponse) {
