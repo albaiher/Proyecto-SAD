@@ -1,0 +1,54 @@
+{
+  "realm" : "SAD",
+  "users" : [ {
+    "id" : "1dbd3646-58bf-44d4-a368-256b627ca69e",
+    "createdTimestamp" : 1675112793743,
+    "username" : "albaiher",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "Alberto",
+    "lastName" : "Baixauli Herraez",
+    "credentials" : [ {
+      "id" : "2cdd8b7e-d8a8-40e4-96d0-df9c30c693f3",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1675112810323,
+      "secretData" : "{\"value\":\"aEBqjzkn1lRWsjMvXshXHEU97CvJRPWmGnccufEoeFPJs38dNSgYRJsqCHQCdxycf4ljEk4UOym4KDgpZsvUvg==\",\"salt\":\"ph/4ROTc9s8h2P13LZ8oGg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "manager", "default-roles-sad" ],
+    "clientRoles" : {
+      "proyecto-sad" : [ "manager" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "5ca21147-81ba-4d1b-91fa-be8181e611c1",
+    "createdTimestamp" : 1675112889314,
+    "username" : "quentin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "Quentin",
+    "lastName" : "Regaud",
+    "credentials" : [ {
+      "id" : "3f3aad8a-b732-44f0-9f16-5c0ee19f9e24",
+      "type" : "password",
+      "userLabel" : "My password",
+      "createdDate" : 1675112909968,
+      "secretData" : "{\"value\":\"1MzwGCzwDbaLIIFbml3VvLVaeTd9DsHi95wbNadzGVJg6ZF0hklgwJZgJ3fR4L3pzwWUSPf27hrT6Xg9MIIRTA==\",\"salt\":\"6Npli00/X2SQVJmkp0F8Yg==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":27500,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "manager", "default-roles-sad" ],
+    "clientRoles" : {
+      "proyecto-sad" : [ "manager" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}
