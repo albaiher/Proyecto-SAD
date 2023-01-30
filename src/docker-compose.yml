@@ -37,6 +37,20 @@ services:
     #  - WAIT_HOSTS=kafka:9092
      # - WAIT_BEFORE_HOSTS=10
 
+
+  keycloak:
+    container_name: 'keycloak'
+    build:
+      ./keycloak/
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: secreto
+    ports:
+      - '8090:8090'
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import
+
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:

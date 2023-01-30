@@ -6,7 +6,7 @@ const  fs = require('fs')
 const cmd = require('child_process');
 const { Console } = require('console')
 
-let systemDirection = path.join(process.cwd(), 'framework-')
+let systemDirection = path.join(__dirname, 'framework-')
 let safeDirectory = 1
 var consumer, producer
 var alreadyWorking = false
@@ -84,14 +84,15 @@ async function clone(repository) {
 	
 }
 
-async function runJob(type, parameters){
+async function runJob(type, fileName, parameters){
 	console.log(`Running job type ${type}`)
 	let stdout
 
-	if (isASimpleNPM(type)){
-		stdout = runCommandSync("npm start", systemDirection)
-	} else if(isAnotherType(type)){
-		stdout = runCommandSync("cat README.md", systemDirection)
+	if (isASimpleJS(type)){
+		stdout = runCommandSync(`node ${fileName}.js ${parameters}` , systemDirection)
+	} else if(isASimpleNPM(type)){
+		runCommandSync("npm install", systemDirection)
+		stdout = runCommandSync(`npm start ${parameters}`, systemDirection)
 	}
 	return stdout;
 }
@@ -136,20 +137,32 @@ function isWorking() {
 	return alreadyWorking
 }
 
+function isASimpleJS(type) {
+	return type === "Simple JS" 
+}
+
 function isASimpleNPM(type) {
-	return type === "Simple npm" 
-}
-
-function isAnotherType(type) {
-	return type === "Another Type"
+	return type === "Simple NPM"
 }
 
 
-function testWorker(){
+function testWorkerSimpleJS(){
 	let message = {
 		version: 1,
-		repository: "https://github.com/isomorphic-git/lightning-fs",
-		type: "Simple npm",
+		repository: "https://github.com/ayoisaiah/javascript-calculator",
+		fileName: "main",
+		type: "Simple JS",
+		parameters: "A"
+	}
+	workInJob("Key", message)
+}
+
+function testWorkerSimpleNPM(){
+	let message = {
+		version: 1,
+		repository: "https://github.com/ayoisaiah/javascript-calculator",
+		fileName: "main",
+		type: "Simple JS",
 		parameters: "A"
 	}
 	workInJob("Key", message)
