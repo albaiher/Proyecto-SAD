@@ -38,7 +38,7 @@ function initialize(){
 			   //sendResult(" Holaaa, "+key+", encantado de conocerte", key )
 			   
 
-			   workInJob(message.key, json)
+			   workInJob(key, json)
 			}
 		}) 
 	}
@@ -47,14 +47,23 @@ function initialize(){
 }
 
 async function workInJob(key, job){
-	if(isWorking()) return ;
+	if(isWorking()){
+		console.log("Job is already Working !!")
+		return 
+	} 
 	let result
 	try{
 		await clone(job.repository)
 		result = await runJob(job.type, job.parameters)
-		.then(sendResult(result, key))
+		.then(
+			sendResult(result, key)
+		)
+		.then(
+			alreadyWorking=false
+		)
 	} catch (error){
-		console.log(error)
+		console.log("ERREUR WorkinJob : "+error)
+		removeDirectory(systemDirection)
 	}
 	removeDirectory(systemDirection)
 }
@@ -101,9 +110,6 @@ async function sendResult  (result, key)  {
 	if(result == undefined){
 		result = "/!\\ Error during the execution.../!\\"
 	}
-	console.log(result)
-	console.log("\n\n")
-	console.log(JSON.stringify(result))
 
 	await producer.connect()
 	await producer.send({

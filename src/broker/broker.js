@@ -27,124 +27,82 @@ function go(){
 		parameters: "A"
 	}
 
-	const main= async() =>{
-		const memoryStore = new session.MemoryStore()
-    	app.use(session({
-			secret: 'some-secret',
-			resave:false,
-			saveUninitialized: true,
-			store: memoryStore
-		} )) 
-	}
-
-		app.use(bodyParser.urlencoded({extended:true}));
-		app.use(bodyParser.json());
-		app.use(bodyParser.raw());
-		app.use(express.json());
-		app.use(express.urlencoded());
-
-		app.post('/', function(req, res) {
-			var message = JSON.stringify(req.body.message)
-			var key = JSON.stringify(req.body.key)
-			console.log("receive "+ message + " from " + key)
-			waitingRepsonse[key] = res;  
-			var resres = waitingRepsonse[key];
-			//resres.send("fausse reponse")
-			
-			const sendK = async (message, key)  => {
-				if(!canBeRunned(message)) {
-					console.error("Can't be run !! JSON needed")
-					return ;
-				}  
-				console.log("sending to Kafka - "+key + " and "+message)
-				
-				await producer.connect()
-				test = await producer.send({
-					topic: "to-run",
-					messages: [{
-						key: key,
-						value: message
-					}]
-				})
-				console.log('Published message n°'+i + " of key: "+key)
-			}
-			const readK = async (key) => {
-				await consumer.connect()
-				await consumer.subscribe({
-					topic: "result-"+key,
-					   fromBeginning: false
-				})
-		
-				await consumer.run({
-					eachMessage: async ({ topic, partition, message }) => {
-						//var key = message.key.toString()
-						var key = message.key
-						var result = message.value.toString()
-						console.log('Received message', {
-							topic,
-							partition,
-							key,
-							result
-						})
-						if(result == undefined){
-							result = "/!\\ Error during the execution.../!\\"
-						}
-						res.send(result)
-					}
-				}) 
-			}
-			//sendK(JSON.stringify(messageGood),key)
-			sendK(message,key)
-			readK(key)
-			
-
-		}) // respuesta a petición http POST
-   		
-		
-		app.listen(3000) // el servidor escucha en el port 3000
-    	console.log("server on!")
-
+	const memoryStore = new session.MemoryStore()
+	app.use(session({
+		secret: 'some-secret',
+		resave:false,
+		saveUninitialized: true,
+		store: memoryStore
+	} )) 
 	
 
-		// await consumer.run({
-		// 	eachMessage: async ({ topic, partition, message }) => {
-		// 	   console.log('Received message', {
-		// 		  topic,
-		// 		  partition,
-		// 		  key: message.key.toString(),
-		// 		  result: message.value.toString()
-		// 	   })
-		// 	}
-		// }) 
+	app.use(bodyParser.urlencoded({extended:true}));
+	app.use(bodyParser.json());
+	app.use(bodyParser.raw());
+	app.use(express.json());
+	app.use(express.urlencoded());
 
-
-	// var i = 0;
-	async function sendKafka  (message)  {
-		if(canBeRunned()) return ;
-		console.log("send Kafka"+i)
+	app.post('/', function(req, res) {
+		var message = JSON.stringify(req.body.message)
+		var key = JSON.stringify(req.body.key)
+		console.log("receive "+ message + " from " + key)
+		waitingRepsonse[key] = res;  
+		var resres = waitingRepsonse[key];
+		//resres.send("fausse reponse")
 		
-		await producer.connect()
-		test = await producer.send({
-			topic: "to-run",
-			messages: [{
-				key: "key".concat(i++),
-				value: message
-			}]
-		})
-		console.log('Published message'+i, { test })
-	}
-	//readKafka();
-	main()
-	.then( () => {
+		const sendK = async (message, key)  => {
+			if(!canBeRunned(message)) {
+				console.error("Can't be run !! JSON needed")
+				return ;
+			}  
+			console.log("sending to Kafka - "+key + " and "+message)
+			
+			await producer.connect()
+			test = await producer.send({
+				topic: "to-run",
+				messages: [{
+					key: key,
+					value: message
+				}]
+			})
+			console.log('Published message n°'+i + " of key: "+key)
+		}
+		const readK = async (key) => {
+			await consumer.connect()
+			await consumer.subscribe({
+				topic: "result-"+key,
+					fromBeginning: true
+			})
+	
+			await consumer.run({
+				eachMessage: async ({ topic, partition, message }) => {
+					//var key = message.key.toString()
+					var key = message.key
+					var result = message.value.toString()
+					console.log('Received message', {
+						topic,
+						partition,
+						key,
+						result
+					})
+					if(result == undefined){
+						result = "/!\\ Error during the execution.../!\\"
+					}
+					res.send(result)
+					consumer.disconnect()
+				}
+			}) 
+		}
+		//sendK(JSON.stringify(messageGood),key)
+		sendK(message,key)
+		readK(key)
 		
-		//sendKafka(JSON.stringify(message))
-	})
-	.catch(error => {
-	console.error(error)
-	process.exit(1)
-	})
 
-
+	}) // respuesta a petición http POST
+	
+	
+	app.listen(3000) // el servidor escucha en el port 3000
+	console.log("server on!")
 
 	function canBeRunned(message){
 		return message && isJSON(message)
@@ -160,43 +118,3 @@ function go(){
 	}
 
 } 
-/*const main = async () => {
-   await producer.connect()             // ++
-   const server = createHookReceiver({
-      // Secret created when registering the webhook with NPM.
-      // Used to validate the payload.
-      secret: process.env.HOOK_SECRET,
-      // Path for the handler to be mounted on.
-      mount: '/hook'
-   })
-
-   server.on('package:publish', async event => {
-	try {
-	   const responses = await producer.send({
-		  topic: process.env.TOPIC,
-		  messages: [{
-			 // Name of the published package as key, to make sure that we process events in order
-			 key: event.name,
-			 // The message value is just bytes to Kafka, so we need to serialize our JavaScript
-			 // object to a JSON string. Other serialization methods like Avro are available.
-			 value: JSON.stringify({
-				package: event.name,
-				version: event.version
-			 })
-		  }]
-	   })
-	   console.log('Published message', { responses })
-	} catch (error) {
-	   console.error('Error publishing message', error)
-	}
-	})
-   server.listen(process.env.PORT || 3000, () => {
-      console.log(`Server listening on port ${process.env.PORT || 3000}`)
-   })
-}
-
-main().catch(error => {
-   console.error(error)
-   process.exit(1)
-})
-*/

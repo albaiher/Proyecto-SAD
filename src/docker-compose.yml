@@ -1,5 +1,12 @@
 version: '2'
 services:
+  entry:
+    image: entry
+    build: ./entry
+    links:
+      - client
+    environment:
+      - CLIENT_URL=http://client:2525
   client:
     image: client
     build: ./client/
@@ -29,7 +36,6 @@ services:
    # environment:
     #  - WAIT_HOSTS=kafka:9092
      # - WAIT_BEFORE_HOSTS=10
-
 
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
