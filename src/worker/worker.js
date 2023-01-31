@@ -144,27 +144,3 @@ function isASimpleJS(type) {
 function isASimpleNPM(type) {
 	return type === "Simple NPM"
 }
-
-
-function testWorkerSimpleJS(){
-	let message = {
-		version: 1,
-		repository: "https://github.com/ayoisaiah/javascript-calculator",
-		fileName: "main",
-		type: "Simple JS",
-		parameters: "A"
-	}
-	workInJob("Key", message)
-}
-
-function testWorkerSimpleNPM(){
-	let message = {
-		version: 1,
-		repository: "https://github.com/ayoisaiah/javascript-calculator",
-		fileName: "main",
-		type: "Simple JS",
-		parameters: "A"
-	}
-	workInJob("Key", message)
-}
-

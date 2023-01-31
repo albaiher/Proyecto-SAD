@@ -2,7 +2,8 @@ const axios = require('axios').default;
 var express = require('express') 
 let kC_Builder = require('./config/keycloak-config.js')
 var bodyParser = require ('body-parser')
-const session = require('express-session')
+const session = require('express-session');
+const { rmSync } = require('fs');
 let app
 
 setTimeout(function(){console.log("Hello client!")}, 39000)
@@ -86,19 +87,19 @@ function initialize(){
       })
     })
 
-    app.get("/authorization", async function(req, res){
-      
-      return await axios.post(
+    app.post("/authorization", function(req, res){
+      return axios.post(
         'http://keycloak:8080/realms/SAD/protocol/openid-connect/token',
         new URLSearchParams({
             'client_id': 'proyecto-sad',
-            'username': req.body.message.username,
-            'password': req.body.message.password,
+            'username': req.body.username,
+            'password': req.body.password,
             'grant_type': 'password',
             'client_secret': 'vUsOFcBzj0wB2mZ8GhtbzDwMW33dce9L'
         })
       ).then(response => {
           // Return token here
+          res.send((response)?.data)
           return (response)?.access_token
         }).catch( error =>
           {
