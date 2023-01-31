@@ -16,7 +16,7 @@ function go(  ) {
 
   axios.request({
     method: "POST",
-    url: ckURL,
+    url: ckURL.concat("/NPM"),
     data:{
       key:1,
       message: {

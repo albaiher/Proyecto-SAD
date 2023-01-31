@@ -15,7 +15,8 @@ RUN npm install --save isomorphic-git
 RUN npm install --save npm-hook-receiver
 
 # Broker and Client modules
-RUN npm install express-session --save
+RUN npm install --save express-session 
 RUN npm install --save express
 RUN npm install --save axios
+RUN npm install --save keycloak-connect
 
