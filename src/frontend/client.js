@@ -86,23 +86,18 @@ function initialize(){
       })
     })
 
-    app.get("/authorization", function(req, res){
+    app.get("/authorization", async function(req, res){
       
-      return axios({
-        method: 'POST',
-        url: "http://keycloak:8080/realms/SAD/protocol/openid-connect/token",
-        data: {
-          client_id: 'proyecto-sad', 
-          client_secret: 'vUsOFcBzj0wB2mZ8GhtbzDwMW33dce9L',
-          grant_type: 'client_credentials',
-          username: req.username,
-          password: req.password
-        },
-        headers: {
-          'Content-type': 'application/x-www-form-urlencoded',
-        },
-        withCredentials: true,
-      }).then(response => {
+      return await axios.post(
+        'http://keycloak:8080/realms/SAD/protocol/openid-connect/token',
+        new URLSearchParams({
+            'client_id': 'proyecto-sad',
+            'username': 'albaiher',
+            'password': 'LPKGs8YMThUqHDs',
+            'grant_type': 'password',
+            'client_secret': 'vUsOFcBzj0wB2mZ8GhtbzDwMW33dce9L'
+        })
+      ).then(response => {
           // Return token here
           return (response)?.access_token
         }).catch( error =>
@@ -112,6 +107,5 @@ function initialize(){
     })
 
   app.listen(2525) // el servidor escucha en el port 2525
-  axios.request
   console.log("server on!")
 }
