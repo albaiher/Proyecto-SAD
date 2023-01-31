@@ -92,8 +92,8 @@ function initialize(){
         'http://keycloak:8080/realms/SAD/protocol/openid-connect/token',
         new URLSearchParams({
             'client_id': 'proyecto-sad',
-            'username': 'albaiher',
-            'password': 'LPKGs8YMThUqHDs',
+            'username': req.body.message.username,
+            'password': req.body.message.password,
             'grant_type': 'password',
             'client_secret': 'vUsOFcBzj0wB2mZ8GhtbzDwMW33dce9L'
         })
