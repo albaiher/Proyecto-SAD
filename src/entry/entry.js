@@ -15,15 +15,11 @@ function go(  ) {
   console.log(ckURL+ " i'm entry")
 
   axios.request({
-    method: "POST",
-    url: ckURL,
+    method: "GET",
+    url: ckURL.concat("/authorization"),
     data:{
-      key:1,
-      message: {
-        version: 1,
-        repository: "https://github.com/isomorphic-git/lightning-fs",
-        type: "Simple npm",
-        parameters: "A" } 
+      username: "albaiher",
+      password: "LPKGs8YMThUqHDs"
     }
   })
   .then(function (reponse) {

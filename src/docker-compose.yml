@@ -4,18 +4,22 @@ services:
     image: entry
     build: ./entry
     links:
-      - client
+      - frontend
     environment:
-      - CLIENT_URL=http://client:2525
-  client:
-    image: client
-    build: ./client/
+      - FRONTEND_URL=http://frontend:7500
+  frontend:
+    container_name: "frontend"
+    image: frontend
+    build: ./frontend/
     links:
       - broker
     environment:
       - BROKER_URL=http://broker:3000
+    ports:
+      - "7500:2525"
     depends_on:
       - kafka
+  
   worker:
     image: worker
     build: ./worker/
@@ -23,19 +27,14 @@ services:
       - broker
     depends_on:
       - kafka
+  
   broker:
     image: broker
     build: ./broker/
-    
     expose:
       - "3000"
     depends_on:
       - kafka
-   # networks:
-    #  - net_backend
-   # environment:
-    #  - WAIT_HOSTS=kafka:9092
-     # - WAIT_BEFORE_HOSTS=10
 
 
   keycloak:
@@ -46,7 +45,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: secreto
     ports:
-      - '8090:8090'
+      - "8080:8080"
     volumes:
       - ./keycloak/realms:/opt/keycloak/data/import
 
