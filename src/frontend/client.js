@@ -16,11 +16,8 @@ function initialize(){
   }
   let bkURL = args[0]
 
-	app = express() 
-	let kc = kC_Builder.initKeycloak()
-	app.use(kc.middleware())
-	
-  const memoryStore = new session.MemoryStore()
+	app = express()
+	const memoryStore = new session.MemoryStore()
   app.use(session(
     {
     secret: 'some-secret',
@@ -29,6 +26,8 @@ function initialize(){
     store: memoryStore
     }
   )) 
+  let kc = kC_Builder.initKeycloak(memoryStore)
+	app.use(kc.middleware())
 
   app.use(bodyParser.urlencoded({extended:true}));
   app.use(bodyParser.json());
@@ -89,13 +88,22 @@ function initialize(){
 
     app.get("/authorization", function(req, res){
 
+      console.log(req)
+      console.log(kC_Builder.keycloakConfig.clientID, 
+        kC_Builder.keycloakConfig.credentials.secret,
+        'client_credentials',
+        req.username,
+        req.password
+      )
       return axios({
         method: 'POST',
-        url: "http://localhost:8080/realms/SAD/protocol/openid-connect/token",
+        url: "http://keycloak:8080/realms/SAD/protocol/openid-connect/token",
         data: {
-          client_id: kC_Builder.keycloakConfig.clientID, // create client in keycloak with same name
+          client_id: kC_Builder.keycloakConfig.clientID, 
           client_secret: kC_Builder.keycloakConfig.credentials.secret,
           grant_type: 'client_credentials',
+          username: req.username,
+          password: req.password
         },
         headers: {
           'Content-type': 'application/x-www-form-urlencoded',
@@ -111,5 +119,6 @@ function initialize(){
     })
 
   app.listen(2525) // el servidor escucha en el port 2525
+  axios.request
   console.log("server on!")
 }

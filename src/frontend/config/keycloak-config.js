@@ -11,14 +11,13 @@ var keycloakConfig = {
     }
 }
 
-function initKeycloak() {
+function initKeycloak(memoryStore) {
     if (_keycloak) {
         console.warn("Trying to init Keycloak again!");
         return _keycloak;
     } 
     else {
         console.log("Initializing Keycloak...");
-        var memoryStore = new session.MemoryStore();
         _keycloak = new Keycloak({ store: memoryStore }, keycloakConfig);
         return _keycloak;
     }

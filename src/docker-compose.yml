@@ -6,8 +6,9 @@ services:
     links:
       - frontend
     environment:
-      - FRONTEND_URL=http://FRONTEND:2525
+      - FRONTEND_URL=http://frontend:7500
   frontend:
+    container_name: "frontend"
     image: frontend
     build: ./frontend/
     links:
