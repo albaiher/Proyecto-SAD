@@ -1,7 +1,7 @@
 package component
 
 #Artifact: {
-  ref: name:  "SADworker"
+  ref: name:  "SADbroker"
 
   description: {
 
