@@ -87,20 +87,13 @@ function initialize(){
     })
 
     app.get("/authorization", function(req, res){
-
-      console.log(req)
-      console.log(kC_Builder.keycloakConfig.clientID, 
-        kC_Builder.keycloakConfig.credentials.secret,
-        'client_credentials',
-        req.username,
-        req.password
-      )
+      
       return axios({
         method: 'POST',
         url: "http://keycloak:8080/realms/SAD/protocol/openid-connect/token",
         data: {
-          client_id: kC_Builder.keycloakConfig.clientID, 
-          client_secret: kC_Builder.keycloakConfig.credentials.secret,
+          client_id: 'proyecto-sad', 
+          client_secret: 'vUsOFcBzj0wB2mZ8GhtbzDwMW33dce9L',
           grant_type: 'client_credentials',
           username: req.username,
           password: req.password
