@@ -1,4 +1,5 @@
 albaiher - LPKGs8YMThUqHDs
 quentin - HbKx68TNThUqTDs
 
-Token obtener en -> http://localhost:8080/realms/SAD/protocol/openid-connect/token -> en un contenedor 
+
+admin - secreto
