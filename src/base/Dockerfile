@@ -2,10 +2,9 @@ FROM ubuntu:focal
 # Base modules
 RUN apt-get update -y
 RUN apt-get install -y curl ufw gcc g++ make gnupg
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_18.x | bash -
 RUN apt-get update -y
 RUN apt-get install -y nodejs
-RUN apt install -y npm
 RUN apt-get upgrade -y
 RUN npm init -y
 RUN npm install kafkajs
