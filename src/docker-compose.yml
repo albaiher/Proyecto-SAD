@@ -14,8 +14,8 @@ services:
       - broker
     environment:
       - BROKER_URL=http://broker:3000
-    port:
-      "7100:2525"
+    ports:
+      - "7500:2525"
     depends_on:
       - kafka
   
@@ -43,8 +43,8 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: secreto
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"
     volumes:
       - ./keycloak/realms:/opt/keycloak/data/import
 

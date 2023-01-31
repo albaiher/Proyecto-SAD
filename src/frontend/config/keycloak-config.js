@@ -7,7 +7,7 @@ var keycloakConfig = {
     bearerOnly: false,
     serverUrl: 'http://keycloak:8080',
     credentials: {
-        secret: ""
+        secret: "vUsOFcBzj0wB2mZ8GhtbzDwMW33dce9L"
     }
 }
 
@@ -31,5 +31,6 @@ function getKeycloak() {
 }
 module.exports = {
     initKeycloak,
-    getKeycloak
+    getKeycloak,
+    keycloakConfig
 }

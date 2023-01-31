@@ -36,7 +36,7 @@ function initialize(){
   app.use(express.json());
   app.use(express.urlencoded());
 
-  
+  let keycloak = kC_Builder.getKeycloak()
   app.post('/JS', keycloak.protect('manager','usuario'), function(req, res) {
     var message = req.body.message
     var key = req.body.key
@@ -85,6 +85,29 @@ function initialize(){
         console.log(erreur);
         res.send(erreur)
       })
+    })
+
+    app.get("/authorization", function(req, res){
+
+      return axios({
+        method: 'POST',
+        url: "http://localhost:8080/realms/SAD/protocol/openid-connect/token",
+        data: {
+          client_id: kC_Builder.keycloakConfig.clientID, // create client in keycloak with same name
+          client_secret: kC_Builder.keycloakConfig.credentials.secret,
+          grant_type: 'client_credentials',
+        },
+        headers: {
+          'Content-type': 'application/x-www-form-urlencoded',
+        },
+        withCredentials: true,
+      }).then(response => {
+          // Return token here
+          return (response)?.access_token
+        }).catch( error =>
+          {
+            return error
+          })
     })
 
   app.listen(2525) // el servidor escucha en el port 2525
