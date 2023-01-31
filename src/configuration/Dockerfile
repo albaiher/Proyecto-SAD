@@ -8,14 +8,14 @@ RUN apt-get install -y nodejs
 RUN apt-get upgrade -y
 RUN npm init -y
 RUN npm install kafkajs
-RUN npm install --save express
-RUN npm install --save express
-RUN npm install express-session --save
+
 
 # Worker modules
 RUN npm install --save isomorphic-git
 RUN npm install --save npm-hook-receiver
 
 # Broker and Client modules
+RUN npm install express-session --save
+RUN npm install --save express
 RUN npm install --save axios
 

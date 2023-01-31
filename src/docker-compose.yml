@@ -46,7 +46,7 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: secreto
     ports:
-      - '8090:8090'
+      - '8090:8080'
     volumes:
       - ./keycloak/realms:/opt/keycloak/data/import
 
